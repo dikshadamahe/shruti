@@ -2,21 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand Colors
+  // ─── Brand Colours ───────────────────────────────────────────────
   static const Color deepBlack = Color(0xFF0A0F1E);
   static const Color surface = Color(0xFF111827);
+  static const Color surfaceLight = Color(0xFF1A2235);
   static const Color amberFire = Color(0xFFFF7849);
+  static const Color amberFireLight = Color(0xFFFFAA85);
   static const Color warmIvory = Color(0xFFE2D4C0);
   static const Color mutedTeal = Color(0xFF4A7FA5);
   static const Color glassWhite = Color(0x33FFFFFF);
+  static const Color errorRed = Color(0xFFEF4444);
 
+  // ─── Gradient Presets ────────────────────────────────────────────
+  static const LinearGradient amberGradient = LinearGradient(
+    colors: [amberFire, Color(0xFFFF9A76)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient darkFadeBottom = LinearGradient(
+    colors: [Colors.transparent, deepBlack],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // ─── Text Styles (standalone, for non-themed usage) ──────────────
+  static TextStyle get displayTitle => GoogleFonts.cormorantGaramond(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        fontStyle: FontStyle.italic,
+        color: warmIvory,
+      );
+
+  static TextStyle get heading => GoogleFonts.plusJakartaSans(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: warmIvory,
+      );
+
+  static TextStyle get body => GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: warmIvory,
+      );
+
+  static TextStyle get transcript => GoogleFonts.notoSerifDevanagari(
+        fontSize: 15,
+        fontWeight: FontWeight.w300,
+        color: warmIvory,
+      );
+
+  static TextStyle get mono => GoogleFonts.ibmPlexMono(
+        fontSize: 10,
+        fontWeight: FontWeight.w400,
+        color: mutedTeal,
+      );
+
+  // ─── Theme Data ──────────────────────────────────────────────────
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: deepBlack,
       primaryColor: amberFire,
-      
+
       colorScheme: const ColorScheme.dark(
         primary: amberFire,
         onPrimary: Colors.white,
@@ -24,22 +73,52 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: surface,
         onSurface: warmIvory,
-        background: deepBlack,
-        onBackground: warmIvory,
+        error: errorRed,
+        onError: Colors.white,
       ),
 
+      splashColor: amberFire.withValues(alpha: 0.08),
+      highlightColor: amberFire.withValues(alpha: 0.04),
+
       textTheme: TextTheme(
+        // Display — Cormorant Garamond (screen hero titles)
         displayLarge: GoogleFonts.cormorantGaramond(
-          fontSize: 32,
+          fontSize: 36,
           fontWeight: FontWeight.w700,
           fontStyle: FontStyle.italic,
           color: warmIvory,
         ),
+        displayMedium: GoogleFonts.cormorantGaramond(
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          fontStyle: FontStyle.italic,
+          color: warmIvory,
+        ),
+        displaySmall: GoogleFonts.cormorantGaramond(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          fontStyle: FontStyle.italic,
+          color: warmIvory,
+        ),
+
+        // Title — Plus Jakarta Sans (section headings)
         titleLarge: GoogleFonts.plusJakartaSans(
-          fontSize: 18,
+          fontSize: 20,
           fontWeight: FontWeight.w600,
           color: warmIvory,
         ),
+        titleMedium: GoogleFonts.plusJakartaSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: warmIvory,
+        ),
+        titleSmall: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: warmIvory.withValues(alpha: 0.9),
+        ),
+
+        // Body — Plus Jakarta Sans (readable content)
         bodyLarge: GoogleFonts.plusJakartaSans(
           fontSize: 16,
           fontWeight: FontWeight.w400,
@@ -48,7 +127,24 @@ class AppTheme {
         bodyMedium: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: warmIvory.withOpacity(0.8),
+          color: warmIvory.withValues(alpha: 0.8),
+        ),
+        bodySmall: GoogleFonts.plusJakartaSans(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: warmIvory.withValues(alpha: 0.6),
+        ),
+
+        // Label — IBM Plex Mono (metadata, timestamps)
+        labelLarge: GoogleFonts.ibmPlexMono(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: mutedTeal,
+        ),
+        labelMedium: GoogleFonts.ibmPlexMono(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: mutedTeal,
         ),
         labelSmall: GoogleFonts.ibmPlexMono(
           fontSize: 10,
@@ -62,19 +158,44 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: glassWhite.withOpacity(0.1)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
         ),
       ),
 
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: GoogleFonts.cormorantGaramond(
           color: warmIvory,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontSize: 26,
+          fontWeight: FontWeight.w700,
+          fontStyle: FontStyle.italic,
         ),
+        iconTheme: const IconThemeData(color: warmIvory),
+      ),
+
+      iconTheme: const IconThemeData(color: warmIvory, size: 24),
+
+      sliderTheme: SliderThemeData(
+        activeTrackColor: amberFire,
+        inactiveTrackColor: Colors.white.withValues(alpha: 0.12),
+        thumbColor: amberFire,
+        overlayColor: amberFire.withValues(alpha: 0.15),
+        trackHeight: 3,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+      ),
+
+      dividerTheme: DividerThemeData(
+        color: Colors.white.withValues(alpha: 0.06),
+        thickness: 1,
+      ),
+
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: amberFire,
+        linearTrackColor: Colors.transparent,
       ),
     );
   }

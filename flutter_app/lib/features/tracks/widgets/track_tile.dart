@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import '../../../core/theme.dart';
 import '../../../data/models/models.dart';
 
@@ -19,29 +19,20 @@ class TrackTile extends StatelessWidget {
     final isBroken = discourse.isBroken;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          splashColor: AppTheme.amberFire.withValues(alpha: 0.08),
-          highlightColor: AppTheme.amberFire.withValues(alpha: 0.04),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppTheme.amberFire.withValues(alpha: 0.08)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
-              border: isActive
-                  ? Border.all(
-                      color: AppTheme.amberFire.withValues(alpha: 0.2))
-                  : null,
-            ),
-            child: Row(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      child: NeumorphicButton(
+        onPressed: onTap,
+        style: NeumorphicStyle(
+          shape: NeumorphicShape.flat,
+          boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(14)),
+          depth: isActive ? -3 : 2,
+          intensity: 0.6,
+          color: isActive 
+             ? AppTheme.amberFire.withValues(alpha: 0.05) 
+             : NeumorphicTheme.baseColor(context),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
               children: [
                 // ── Track number ───────────────────────────────
                 SizedBox(
@@ -49,12 +40,15 @@ class TrackTile extends StatelessWidget {
                   height: 36,
                   child: isActive
                       ? _buildPlayingIndicator()
-                      : Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                      : Neumorphic(
+                          style: NeumorphicStyle(
+                            shape: NeumorphicShape.convex,
+                            boxShape: NeumorphicBoxShape.circle(),
+                            depth: isBroken ? 0 : 2,
+                            intensity: 0.6,
                             color: isBroken
                                 ? AppTheme.surface
-                                : AppTheme.amberFire.withValues(alpha: 0.12),
+                                : AppTheme.surfaceLight,
                           ),
                           child: Center(
                             child: Text(
@@ -117,21 +111,23 @@ class TrackTile extends StatelessWidget {
 
                 // ── Play icon ──────────────────────────────────
                 if (!isBroken)
-                  Icon(
+                  NeumorphicIcon(
                     isActive
                         ? Icons.volume_up_rounded
-                        : Icons.play_circle_outline_rounded,
+                        : Icons.play_arrow_rounded,
                     size: 24,
-                    color: isActive
-                        ? AppTheme.amberFire
-                        : AppTheme.warmIvory.withValues(alpha: 0.4),
+                    style: NeumorphicStyle(
+                      depth: isActive ? 0 : 1,
+                      intensity: 0.8,
+                      color: isActive
+                          ? AppTheme.amberFire
+                          : AppTheme.warmIvory.withValues(alpha: 0.4),
+                    ),
                   ),
               ],
             ),
           ),
-        ),
-      ),
-    );
+      );
   }
 
   // ── Unavailable badge for broken URLs ────────────────────────────
@@ -155,10 +151,11 @@ class TrackTile extends StatelessWidget {
 
   // ── Animated equalizer bars for now-playing ──────────────────────
   Widget _buildPlayingIndicator() {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppTheme.amberFire.withValues(alpha: 0.15),
+    return Neumorphic(
+      style: const NeumorphicStyle(
+        shape: NeumorphicShape.concave,
+        boxShape: NeumorphicBoxShape.circle(),
+        depth: -2,
       ),
       child: const Center(
         child: Icon(

@@ -1,5 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
@@ -14,7 +14,7 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppTheme.deepBlack,
+      systemNavigationBarColor: AppTheme.surface,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -35,11 +35,18 @@ class OshoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Osho Discourses',
-      theme: AppTheme.darkTheme,
-      routerConfig: appRouter,
-      debugShowCheckedModeBanner: false,
+    return NeumorphicTheme(
+      themeMode: ThemeMode.dark,
+      theme: AppTheme.darkNeumorphicTheme,
+      darkTheme: AppTheme.darkNeumorphicTheme,
+      child: MaterialApp.router(
+        title: 'Osho Discourses',
+        themeMode: ThemeMode.dark,
+        theme: AppTheme.darkTheme,
+        darkTheme: AppTheme.darkTheme,
+        routerConfig: appRouter,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

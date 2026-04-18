@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
 import '../../core/widgets/animated_entrance.dart';
@@ -12,52 +12,14 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final seriesAsync = ref.watch(seriesListProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.deepBlack,
-      body: Stack(
-        children: [
-          // ── Ambient glow orbs ──────────────────────────────────
-          Positioned(
-            top: -80,
-            right: -60,
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.amberFire.withValues(alpha: 0.18),
-                    AppTheme.amberFire.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -120,
-            left: -80,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.mutedTeal.withValues(alpha: 0.10),
-                    AppTheme.mutedTeal.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ── Main content ───────────────────────────────────────
-          SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // ── App Bar ──────────────────────────────────────
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: NeumorphicTheme.baseColor(context),
+        body: NeumorphicBackground(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // ── App Bar ──────────────────────────────────────
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -68,33 +30,22 @@ class HomeScreen extends ConsumerWidget {
                           Row(
                             children: [
                               // Om symbol with glow
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppTheme.amberFire,
-                                      AppTheme.amberFire.withValues(alpha: 0.7),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.amberFire.withValues(alpha: 0.3),
-                                      blurRadius: 16,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
+                              Neumorphic(
+                                style: const NeumorphicStyle(
+                                  shape: NeumorphicShape.convex,
+                                  boxShape: NeumorphicBoxShape.circle(),
+                                  depth: 4,
+                                  intensity: 0.8,
                                 ),
-                                child: const Center(
-                                  child: Text(
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  alignment: Alignment.center,
+                                  child: const Text(
                                     'ॐ',
                                     style: TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.white,
+                                      fontSize: 24,
+                                      color: AppTheme.amberFire,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -179,8 +130,7 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
           ),
-        ],
-      ),
+        ),
     );
   }
 
@@ -201,13 +151,12 @@ class HomeScreen extends ConsumerWidget {
         itemBuilder: (context, index) {
           return AnimatedEntrance(
             delay: Duration(milliseconds: 80 * index),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
+            child: Neumorphic(
+              style: NeumorphicStyle(
+                shape: NeumorphicShape.flat,
+                boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+                depth: 2,
+                intensity: 0.5,
               ),
               child: const Center(
                 child: SizedBox(

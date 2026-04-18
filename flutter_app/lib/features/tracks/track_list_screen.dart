@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
 import '../../core/widgets/animated_entrance.dart';
@@ -24,48 +24,27 @@ class TrackListScreen extends ConsumerWidget {
     final currentDiscourse = ref.watch(currentDiscourseProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.deepBlack,
-      body: Stack(
-        children: [
-          // ── Ambient glow ─────────────────────────────────────
-          Positioned(
-            top: -60,
-            left: -40,
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.amberFire.withValues(alpha: 0.12),
-                    AppTheme.amberFire.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ── Main content ─────────────────────────────────────
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // ── Collapsing Header ────────────────────────────
+      backgroundColor: NeumorphicTheme.baseColor(context),
+      body: NeumorphicBackground(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ── Collapsing Header ────────────────────────────
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
                 stretch: true,
-                backgroundColor: AppTheme.deepBlack,
-                leading: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.deepBlack.withValues(alpha: 0.5),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back_rounded, size: 20),
+                backgroundColor: Colors.transparent,
+                leading: NeumorphicButton(
+                  margin: const EdgeInsets.all(8),
+                  style: const NeumorphicStyle(
+                    depth: 3,
+                    intensity: 0.7,
+                    boxShape: NeumorphicBoxShape.circle(),
                   ),
+                  padding: EdgeInsets.zero,
                   onPressed: () => Navigator.pop(context),
+                  child: const Icon(Icons.arrow_back_rounded, size: 20),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
                   background: _buildSeriesHeader(context, ref),
@@ -88,7 +67,7 @@ class TrackListScreen extends ConsumerWidget {
                           const Spacer(),
                           // Play all button
                           if (discourses.any((d) => !d.isBroken))
-                            TextButton.icon(
+                            NeumorphicButton(
                               onPressed: () {
                                 final playable =
                                     discourses.where((d) => !d.isBroken).toList();
@@ -96,13 +75,31 @@ class TrackListScreen extends ConsumerWidget {
                                   _playDiscourse(ref, playable.first);
                                 }
                               },
-                              icon: const Icon(Icons.play_circle_filled_rounded,
-                                  size: 20),
-                              label: const Text('Play All'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.amberFire,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 4),
+                              style: NeumorphicStyle(
+                                depth: 3,
+                                intensity: 0.8,
+                                boxShape: NeumorphicBoxShape.roundRect(
+                                    BorderRadius.circular(20)),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.play_arrow_rounded,
+                                      size: 18, color: AppTheme.amberFire),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Play All',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: AppTheme.amberFire,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
                               ),
                             ),
                         ],
@@ -167,8 +164,7 @@ class TrackListScreen extends ConsumerWidget {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
-        ],
-      ),
+        ),
     );
   }
 
@@ -195,30 +191,28 @@ class TrackListScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Om mandala placeholder
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.amberFire.withValues(alpha: 0.3),
-                      AppTheme.surface,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
+              Neumorphic(
+                style: NeumorphicStyle(
+                  shape: NeumorphicShape.convex,
+                  boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+                  depth: 4,
+                  intensity: 0.7,
                 ),
-                child: Center(
-                  child: Text(
-                    'ॐ',
-                    style: TextStyle(
-                      fontSize: 36,
-                      color: AppTheme.amberFire.withValues(alpha: 0.5),
-                      fontWeight: FontWeight.bold,
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: Center(
+                    child: NeumorphicText(
+                      'ॐ',
+                      style: const NeumorphicStyle(
+                        depth: 2,
+                        intensity: 0.5,
+                        color: AppTheme.amberFireLight,
+                      ),
+                      textStyle: NeumorphicTextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -258,19 +252,22 @@ class TrackListScreen extends ConsumerWidget {
       _ => ('Mixed', const Color(0xFF8B5CF6)),
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+    return Neumorphic(
+      style: NeumorphicStyle(
+        depth: 2,
+        intensity: 0.8,
+        color: color.withValues(alpha: 0.2),
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(10)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: color,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: color,
+          ),
         ),
       ),
     );
@@ -293,19 +290,23 @@ class TrackListScreen extends ConsumerWidget {
           5,
           (i) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              height: 64,
-              decoration: BoxDecoration(
-                color: AppTheme.surface.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
+            child: Neumorphic(
+              style: NeumorphicStyle(
+                shape: NeumorphicShape.flat,
+                boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(12)),
+                depth: 2,
+                intensity: 0.5,
               ),
-              child: const Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.amberFire,
+              child: const SizedBox(
+                height: 64,
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.amberFire,
+                    ),
                   ),
                 ),
               ),

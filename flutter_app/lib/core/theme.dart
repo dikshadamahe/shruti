@@ -1,16 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ─── Brand Colours ───────────────────────────────────────────────
-  static const Color deepBlack = Color(0xFF0A0F1E);
-  static const Color surface = Color(0xFF111827);
-  static const Color surfaceLight = Color(0xFF1A2235);
+  // Neumorphism requires background matches surface, so we elevate deepBlack.
+  static const Color deepBlack = Color(0xFF14171E);
+  static const Color surface = Color(0xFF1B1E26);
+  static const Color surfaceLight = Color(0xFF222731);
   static const Color amberFire = Color(0xFFFF7849);
   static const Color amberFireLight = Color(0xFFFFAA85);
   static const Color warmIvory = Color(0xFFE2D4C0);
   static const Color mutedTeal = Color(0xFF4A7FA5);
-  static const Color glassWhite = Color(0x33FFFFFF);
+  static const Color neumorphicDarkShadow = Color(0xFF12141A);
+  static const Color neumorphicLightShadow = Color(0xFF262A36);
   static const Color errorRed = Color(0xFFEF4444);
 
   // ─── Gradient Presets ────────────────────────────────────────────
@@ -59,6 +61,38 @@ class AppTheme {
       );
 
   // ─── Theme Data ──────────────────────────────────────────────────
+  static NeumorphicThemeData get darkNeumorphicTheme {
+    return NeumorphicThemeData(
+      baseColor: surface,
+      lightSource: LightSource.topLeft,
+      depth: 6,
+      intensity: 0.65,
+      shadowDarkColorEmboss: neumorphicDarkShadow,
+      shadowLightColorEmboss: neumorphicLightShadow,
+      shadowDarkColor: neumorphicDarkShadow,
+      shadowLightColor: neumorphicLightShadow,
+      appBarTheme: NeumorphicAppBarThemeData(
+        color: surface,
+        buttonStyle: const NeumorphicStyle(
+          depth: 4,
+          intensity: 0.8,
+          boxShape: NeumorphicBoxShape.circle(),
+        ),
+        textStyle: GoogleFonts.cormorantGaramond(
+          color: warmIvory,
+          fontSize: 26,
+          fontWeight: FontWeight.w700,
+          fontStyle: FontStyle.italic,
+        ),
+        iconTheme: const IconThemeData(color: warmIvory),
+      ),
+      defaultTextColor: warmIvory,
+      accentColor: amberFire,
+      variantColor: mutedTeal,
+      boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+    );
+  }
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

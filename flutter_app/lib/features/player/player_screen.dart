@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
-import '../../core/widgets/glass_container.dart';
 import '../../services/audio_playback_service.dart';
 import '../../services/current_discourse_provider.dart';
 
@@ -23,40 +22,9 @@ class PlayerScreen extends ConsumerWidget {
     final series = currentState?.series;
 
     return Scaffold(
-      backgroundColor: AppTheme.deepBlack,
-      body: Stack(
-        children: [
-          // ── Ambient background glow orbs ────────────────────────
-          Positioned(
-            top: -100,
-            right: -80,
-            child: _buildGlowOrb(
-              size: 320,
-              color: AppTheme.amberFire,
-              opacity: isPlaying ? 0.18 : 0.10,
-            ),
-          ),
-          Positioned(
-            bottom: -60,
-            left: -100,
-            child: _buildGlowOrb(
-              size: 280,
-              color: AppTheme.mutedTeal,
-              opacity: 0.08,
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.4,
-            left: -120,
-            child: _buildGlowOrb(
-              size: 200,
-              color: AppTheme.amberFire,
-              opacity: 0.06,
-            ),
-          ),
-
-          // ── Main content ───────────────────────────────────────
-          SafeArea(
+      backgroundColor: NeumorphicTheme.baseColor(context),
+      body: NeumorphicBackground(
+        child: SafeArea(
             child: Column(
               children: [
                 // ── Top bar ──────────────────────────────────────
@@ -64,11 +32,16 @@ class PlayerScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                            size: 30),
+                      NeumorphicButton(
+                        style: const NeumorphicStyle(
+                          depth: 3,
+                          intensity: 0.6,
+                          boxShape: NeumorphicBoxShape.circle(),
+                        ),
                         onPressed: () => Navigator.pop(context),
-                        color: AppTheme.warmIvory,
+                        padding: const EdgeInsets.all(8),
+                        child: const Icon(Icons.keyboard_arrow_down_rounded,
+                            size: 24, color: AppTheme.warmIvory),
                       ),
                       Expanded(
                         child: Column(
@@ -110,53 +83,45 @@ class PlayerScreen extends ConsumerWidget {
                     aspectRatio: 1,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 500),
-                      child: GlassContainer(
-                        borderRadius: 28,
-                        blur: 24,
-                        opacity: 0.08,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(28),
-                            gradient: RadialGradient(
-                              colors: [
-                                AppTheme.amberFire.withValues(alpha: isPlaying ? 0.12 : 0.06),
-                                Colors.transparent,
-                              ],
-                              radius: 0.8,
-                            ),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Concentric circles
-                              ...List.generate(3, (i) {
-                                final scale = 0.5 + (i * 0.2);
-                                return Container(
-                                  width: 200 * scale,
-                                  height: 200 * scale,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppTheme.amberFire.withValues(
-                                        alpha: 0.08 - (i * 0.02),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                              // Om symbol
-                              Text(
-                                'ॐ',
-                                style: TextStyle(
-                                  fontSize: 72,
-                                  color: AppTheme.amberFire.withValues(
-                                    alpha: isPlaying ? 0.6 : 0.3,
-                                  ),
-                                  fontWeight: FontWeight.bold,
+                      child: Neumorphic(
+                        style: NeumorphicStyle(
+                          shape: NeumorphicShape.convex,
+                          boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(28)),
+                          depth: 6,
+                          intensity: 0.7,
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Concentric Neumorphic rings
+                            ...List.generate(2, (i) {
+                              final scale = 0.6 + (i * 0.25);
+                              return Neumorphic(
+                                style: NeumorphicStyle(
+                                  depth: -2.0 + i,
+                                  intensity: 0.5,
+                                  boxShape: NeumorphicBoxShape.circle(),
                                 ),
+                                child: SizedBox(
+                                  width: 240 * scale,
+                                  height: 240 * scale,
+                                ),
+                              );
+                            }),
+                            // Om symbol
+                            NeumorphicText(
+                              'ॐ',
+                              style: NeumorphicStyle(
+                                depth: 3,
+                                intensity: 0.8,
+                                color: isPlaying ? AppTheme.amberFire : AppTheme.amberFireLight,
                               ),
-                            ],
-                          ),
+                              textStyle: NeumorphicTextStyle(
+                                fontSize: 84,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -196,24 +161,24 @@ class PlayerScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Column(
                     children: [
-                      SliderTheme(
-                        data: Theme.of(context).sliderTheme.copyWith(
-                              trackHeight: 3,
-                              thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 5),
-                            ),
-                        child: Slider(
-                          value: position.inMilliseconds
-                              .toDouble()
-                              .clamp(0, duration.inMilliseconds.toDouble()),
-                          max: duration.inMilliseconds.toDouble() > 0
-                              ? duration.inMilliseconds.toDouble()
-                              : 1.0,
-                          onChanged: (value) {
-                            audioService
-                                .seek(Duration(milliseconds: value.toInt()));
-                          },
+                      NeumorphicSlider(
+                        height: 8,
+                        style: const SliderStyle(
+                          depth: -2,
+                          accent: AppTheme.amberFire,
+                          variant: AppTheme.amberFireLight,
                         ),
+                        value: position.inMilliseconds
+                            .toDouble()
+                            .clamp(0, duration.inMilliseconds.toDouble()),
+                        min: 0,
+                        max: duration.inMilliseconds.toDouble() > 0
+                            ? duration.inMilliseconds.toDouble()
+                            : 1.0,
+                        onChanged: (value) {
+                          audioService
+                              .seek(Duration(milliseconds: value.toInt()));
+                        },
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -246,7 +211,7 @@ class PlayerScreen extends ConsumerWidget {
                       // Rewind 10s
                       _buildControlButton(
                         icon: Icons.replay_10_rounded,
-                        size: 28,
+                        size: 24,
                         onTap: () {
                           final newPos = position - const Duration(seconds: 10);
                           audioService.seek(
@@ -257,40 +222,37 @@ class PlayerScreen extends ConsumerWidget {
                       // Previous
                       _buildControlButton(
                         icon: Icons.skip_previous_rounded,
-                        size: 32,
+                        size: 28,
                         onTap: () {},
                       ),
 
                       // Play / Pause
-                      GestureDetector(
-                        onTap: () {
+                      NeumorphicButton(
+                        onPressed: () {
                           if (isPlaying) {
                             audioService.pause();
                           } else {
                             audioService.resume();
                           }
                         },
-                        child: Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: AppTheme.amberGradient,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.amberFire.withValues(alpha: 0.35),
-                                blurRadius: 20,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 250),
-                            child: Icon(
-                              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                              key: ValueKey(isPlaying),
-                              size: 36,
-                              color: Colors.white,
+                        style: NeumorphicStyle(
+                          shape: NeumorphicShape.convex,
+                          boxShape: const NeumorphicBoxShape.circle(),
+                          depth: 6,
+                          intensity: 0.8,
+                          color: isPlaying ? AppTheme.surfaceLight : AppTheme.surface,
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: NeumorphicIcon(
+                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            key: ValueKey(isPlaying),
+                            size: 40,
+                            style: NeumorphicStyle(
+                              depth: 2,
+                              intensity: 0.9,
+                              color: isPlaying ? AppTheme.amberFire : AppTheme.warmIvory,
                             ),
                           ),
                         ),
@@ -299,14 +261,14 @@ class PlayerScreen extends ConsumerWidget {
                       // Next
                       _buildControlButton(
                         icon: Icons.skip_next_rounded,
-                        size: 32,
+                        size: 28,
                         onTap: () {},
                       ),
 
                       // Forward 30s
                       _buildControlButton(
                         icon: Icons.forward_30_rounded,
-                        size: 28,
+                        size: 24,
                         onTap: () {
                           final newPos = position + const Duration(seconds: 30);
                           audioService.seek(
@@ -321,28 +283,6 @@ class PlayerScreen extends ConsumerWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlowOrb({
-    required double size,
-    required Color color,
-    required double opacity,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 800),
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0.0),
-          ],
-        ),
       ),
     );
   }
@@ -352,15 +292,19 @@ class PlayerScreen extends ConsumerWidget {
     required double size,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        child: Icon(
-          icon,
-          size: size,
-          color: AppTheme.warmIvory.withValues(alpha: 0.8),
-        ),
+    return NeumorphicButton(
+      onPressed: onTap,
+      style: const NeumorphicStyle(
+        shape: NeumorphicShape.convex,
+        boxShape: NeumorphicBoxShape.circle(),
+        depth: 4,
+        intensity: 0.6,
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Icon(
+        icon,
+        size: size,
+        color: AppTheme.warmIvory.withValues(alpha: 0.8),
       ),
     );
   }

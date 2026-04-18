@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic_plus/flutter_neumorphic.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/glass_container.dart';
 import '../../../data/models/models.dart';
 
 class SeriesCard extends StatelessWidget {
@@ -17,10 +16,13 @@ class SeriesCard extends StatelessWidget {
         pathParameters: {'id': series.id},
         extra: series,
       ),
-      child: GlassContainer(
-        borderRadius: 16,
-        blur: 18,
-        opacity: 0.06,
+      child: Neumorphic(
+        style: NeumorphicStyle(
+          shape: NeumorphicShape.convex,
+          boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+          depth: 4,
+          intensity: 0.6,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -29,9 +31,6 @@ class SeriesCard extends StatelessWidget {
               flex: 3,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
                   gradient: LinearGradient(
                     colors: [
                       AppTheme.amberFire.withValues(alpha: 0.15),
@@ -45,11 +44,15 @@ class SeriesCard extends StatelessWidget {
                   children: [
                     // Om watermark
                     Center(
-                      child: Text(
+                      child: NeumorphicText(
                         'ॐ',
-                        style: TextStyle(
+                        style: const NeumorphicStyle(
+                          depth: 2,
+                          intensity: 0.5,
+                          color: AppTheme.amberFireLight,
+                        ),
+                        textStyle: NeumorphicTextStyle(
                           fontSize: 56,
-                          color: AppTheme.amberFire.withValues(alpha: 0.12),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -121,22 +124,23 @@ class SeriesCard extends StatelessWidget {
       _ => ('Mix', const Color(0xFF8B5CF6)),
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
+    return Neumorphic(
+      style: NeumorphicStyle(
+        depth: 2,
+        intensity: 0.8,
         color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withValues(alpha: 0.4),
-        ),
+        boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(8)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
-          color: color,
-          letterSpacing: 0.5,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: color,
+            letterSpacing: 0.5,
+          ),
         ),
       ),
     );

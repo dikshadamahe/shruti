@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../features/home/home_screen.dart';
 import '../features/tracks/track_list_screen.dart';
 import '../features/player/player_screen.dart';
-import '../features/player/mini_player_bar.dart';
 import '../data/models/models.dart';
 import '../core/theme.dart';
 
@@ -14,17 +13,7 @@ final appRouter = GoRouter(
       builder: (context, state, child) {
         return Scaffold(
           backgroundColor: AppTheme.deepBlack,
-          body: Stack(
-            children: [
-              child,
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: MiniPlayerBar(),
-              ),
-            ],
-          ),
+          body: Stack(children: [child, const PlayerPanel()]),
         );
       },
       routes: [
@@ -34,9 +23,10 @@ final appRouter = GoRouter(
           pageBuilder: (context, state) => CustomTransitionPage(
             key: state.pageKey,
             child: const HomeScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
           ),
           routes: [
             GoRoute(
@@ -50,16 +40,17 @@ final appRouter = GoRouter(
                   child: TrackListScreen(seriesId: seriesId, series: series),
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
-                    const begin = Offset(1.0, 0.0);
-                    const end = Offset.zero;
-                    final tween = Tween(begin: begin, end: end).chain(
-                      CurveTween(curve: Curves.easeInOutCubic),
-                    );
-                    return SlideTransition(
-                      position: animation.drive(tween),
-                      child: child,
-                    );
-                  },
+                        const begin = Offset(1.0, 0.0);
+                        const end = Offset.zero;
+                        final tween = Tween(
+                          begin: begin,
+                          end: end,
+                        ).chain(CurveTween(curve: Curves.easeInOutCubic));
+                        return SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        );
+                      },
                 );
               },
             ),
@@ -76,9 +67,10 @@ final appRouter = GoRouter(
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
-          final tween = Tween(begin: begin, end: end).chain(
-            CurveTween(curve: Curves.easeInOutCubic),
-          );
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: Curves.easeInOutCubic));
           return SlideTransition(
             position: animation.drive(tween),
             child: child,

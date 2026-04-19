@@ -19,6 +19,11 @@ Future<void> initAudioPlaybackService() async {
 }
 
 List<MediaItem> buildMediaQueue(List<Discourse> discourses, {Series? series}) {
+  final coverImageUrl = series?.coverImageUrl;
+  final artUri = coverImageUrl != null && coverImageUrl.isNotEmpty
+      ? Uri.tryParse(coverImageUrl)
+      : null;
+
   return discourses
       .map(
         (discourse) => MediaItem(
@@ -26,11 +31,13 @@ List<MediaItem> buildMediaQueue(List<Discourse> discourses, {Series? series}) {
           album: 'Osho Discourses',
           title: discourse.title,
           artist: series?.title ?? 'Osho Discourse',
+          artUri: artUri,
           duration: discourse.durationSeconds > 0
               ? Duration(seconds: discourse.durationSeconds)
               : null,
           extras: {
             'audioUrl': discourse.audioUrl,
+            'coverImageUrl': coverImageUrl,
             'seriesId': series?.id,
             'seriesTitle': series?.title,
             'discourseId': discourse.id,

@@ -1,6 +1,6 @@
-# Osho Audio Discourse App
+# Shruti
 
-A **non-profit, ad-free** mobile app delivering a Spotify-grade audio experience for Osho's teachings, with **real-time synced transcript scrolling**.
+Shruti is a **non-profit, ad-free** mobile app delivering a Spotify-grade audio experience for Osho's teachings, with **real-time synced transcript scrolling**.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ A **non-profit, ad-free** mobile app delivering a Spotify-grade audio experience
 ## Project Structure
 
 ```
-osho-audio-app/
+shruti/
 ├── flutter_app/     ← Flutter project (Android + iOS)
 ├── scraper/         ← Python scraper (Cloud Run)
 ├── ai_pipeline/     ← Local AI transcription (never deployed)

@@ -5,23 +5,18 @@ import '../../core/widgets/animated_entrance.dart';
 import '../../data/models/models.dart';
 import '../../data/repositories/database_repository.dart';
 import '../../services/audio_playback_service.dart';
-import '../../services/current_discourse_provider.dart';
 import 'widgets/track_tile.dart';
 
 class TrackListScreen extends ConsumerWidget {
   final String seriesId;
   final Series? series;
 
-  const TrackListScreen({
-    super.key,
-    required this.seriesId,
-    this.series,
-  });
+  const TrackListScreen({super.key, required this.seriesId, this.series});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final discoursesAsync = ref.watch(discourseListProvider(seriesId));
-    final currentDiscourse = ref.watch(currentDiscourseProvider);
+    final currentMediaItem = ref.watch(currentMediaItemProvider).value;
 
     return Scaffold(
       backgroundColor: NeumorphicTheme.baseColor(context),
@@ -30,141 +25,148 @@ class TrackListScreen extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           slivers: [
             // ── Collapsing Header ────────────────────────────
-              SliverAppBar(
-                expandedHeight: 260,
-                pinned: true,
-                stretch: true,
-                backgroundColor: Colors.transparent,
-                leading: NeumorphicButton(
-                  margin: const EdgeInsets.all(8),
-                  style: const NeumorphicStyle(
-                    depth: 3,
-                    intensity: 0.7,
-                    boxShape: NeumorphicBoxShape.circle(),
-                  ),
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.pop(context),
-                  child: const Icon(Icons.arrow_back_rounded, size: 20),
+            SliverAppBar(
+              expandedHeight: 260,
+              pinned: true,
+              stretch: true,
+              backgroundColor: Colors.transparent,
+              leading: NeumorphicButton(
+                margin: const EdgeInsets.all(8),
+                style: const NeumorphicStyle(
+                  depth: 3,
+                  intensity: 0.7,
+                  boxShape: NeumorphicBoxShape.circle(),
                 ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: _buildSeriesHeader(context, ref),
-                  collapseMode: CollapseMode.parallax,
-                ),
+                padding: EdgeInsets.zero,
+                onPressed: () => Navigator.pop(context),
+                child: const Icon(Icons.arrow_back_rounded, size: 20),
               ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: _buildSeriesHeader(context, ref),
+                collapseMode: CollapseMode.parallax,
+              ),
+            ),
 
-              // ── Track count info ─────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                  child: AnimatedEntrance(
-                    child: discoursesAsync.when(
-                      data: (discourses) => Row(
-                        children: [
-                          Text(
-                            '${discourses.length} Discourses',
-                            style: Theme.of(context).textTheme.labelLarge,
+            // ── Track count info ─────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: AnimatedEntrance(
+                  child: discoursesAsync.when(
+                    data: (discourses) => Row(
+                      children: [
+                        Text(
+                          '${discourses.length} Discourses',
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                        const Spacer(),
+                        // Play all button
+                        if (discourses.any((d) => !d.isBroken))
+                          NeumorphicButton(
+                            onPressed: () {
+                              final playable = discourses
+                                  .where((d) => !d.isBroken)
+                                  .toList();
+                              if (playable.isNotEmpty) {
+                                _playDiscourse(ref, playable, playable.first);
+                              }
+                            },
+                            style: NeumorphicStyle(
+                              depth: 3,
+                              intensity: 0.8,
+                              boxShape: NeumorphicBoxShape.roundRect(
+                                BorderRadius.circular(20),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.play_arrow_rounded,
+                                  size: 18,
+                                  color: AppTheme.amberFire,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Play All',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: AppTheme.amberFire,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const Spacer(),
-                          // Play all button
-                          if (discourses.any((d) => !d.isBroken))
-                            NeumorphicButton(
-                              onPressed: () {
-                                final playable =
-                                    discourses.where((d) => !d.isBroken).toList();
-                                if (playable.isNotEmpty) {
-                                  _playDiscourse(ref, playable.first);
-                                }
-                              },
-                              style: NeumorphicStyle(
-                                depth: 3,
-                                intensity: 0.8,
-                                boxShape: NeumorphicBoxShape.roundRect(
-                                    BorderRadius.circular(20)),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.play_arrow_rounded,
-                                      size: 18, color: AppTheme.amberFire),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Play All',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color: AppTheme.amberFire,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, _) => const SizedBox.shrink(),
+                      ],
                     ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
                 ),
               ),
+            ),
 
-              // ── Divider ──────────────────────────────────────
-              SliverToBoxAdapter(
-                child: Divider(
-                  color: Colors.white.withValues(alpha: 0.06),
-                  indent: 20,
-                  endIndent: 20,
-                ),
+            // ── Divider ──────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Divider(
+                color: Colors.white.withValues(alpha: 0.06),
+                indent: 20,
+                endIndent: 20,
               ),
+            ),
 
-              // ── Track list ───────────────────────────────────
-              discoursesAsync.when(
-                loading: () => SliverToBoxAdapter(
-                  child: _buildLoadingState(),
-                ),
-                error: (error, stack) => SliverToBoxAdapter(
-                  child: _buildErrorState(context, ref, error),
-                ),
-                data: (discourses) {
-                  if (discourses.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: _buildEmptyState(context),
-                    );
-                  }
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final discourse = discourses[index];
-                          final isActive =
-                              currentDiscourse?.discourse.id == discourse.id;
-                          return AnimatedEntrance(
-                            delay: Duration(milliseconds: 40 * index),
-                            child: TrackTile(
-                              discourse: discourse,
-                              isActive: isActive,
-                              onTap: discourse.isBroken
-                                  ? null
-                                  : () => _playDiscourse(ref, discourse),
-                            ),
-                          );
-                        },
-                        childCount: discourses.length,
-                      ),
-                    ),
-                  );
-                },
+            // ── Track list ───────────────────────────────────
+            discoursesAsync.when(
+              loading: () => SliverToBoxAdapter(child: _buildLoadingState()),
+              error: (error, stack) => SliverToBoxAdapter(
+                child: _buildErrorState(context, ref, error),
               ),
+              data: (discourses) {
+                if (discourses.isEmpty) {
+                  return SliverToBoxAdapter(child: _buildEmptyState(context));
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final discourse = discourses[index];
+                      final playableDiscourses = discourses
+                          .where((d) => !d.isBroken)
+                          .toList();
+                      final isActive =
+                          currentMediaItem?.extras?['seriesId'] == seriesId &&
+                          currentMediaItem?.extras?['discourseId'] ==
+                              discourse.id;
+                      return AnimatedEntrance(
+                        delay: Duration(milliseconds: 40 * index),
+                        child: TrackTile(
+                          discourse: discourse,
+                          isActive: isActive,
+                          onTap: discourse.isBroken
+                              ? null
+                              : () => _playDiscourse(
+                                  ref,
+                                  playableDiscourses,
+                                  discourse,
+                                ),
+                        ),
+                      );
+                    }, childCount: discourses.length),
+                  ),
+                );
+              },
+            ),
 
-              // Bottom padding for mini-player
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
-          ),
+            // Bottom padding for mini-player
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
         ),
+      ),
     );
   }
 
@@ -194,7 +196,9 @@ class TrackListScreen extends ConsumerWidget {
               Neumorphic(
                 style: NeumorphicStyle(
                   shape: NeumorphicShape.convex,
-                  boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(16)),
+                  boxShape: NeumorphicBoxShape.roundRect(
+                    BorderRadius.circular(16),
+                  ),
                   depth: 4,
                   intensity: 0.7,
                 ),
@@ -273,12 +277,20 @@ class TrackListScreen extends ConsumerWidget {
     );
   }
 
-  void _playDiscourse(WidgetRef ref, Discourse discourse) {
-    ref.read(currentDiscourseProvider.notifier).setDiscourse(
-          discourse,
-          series: series,
-        );
-    ref.read(audioPlaybackProvider).playDiscourse(discourse);
+  Future<void> _playDiscourse(
+    WidgetRef ref,
+    List<Discourse> discourses,
+    Discourse discourse,
+  ) async {
+    final startIndex = discourses.indexWhere((item) => item.id == discourse.id);
+    if (startIndex < 0) return;
+
+    await playQueue(
+      ref.read(audioPlaybackProvider),
+      discourses,
+      initialIndex: startIndex,
+      series: series,
+    );
   }
 
   // ── Loading state ────────────────────────────────────────────────
@@ -293,7 +305,9 @@ class TrackListScreen extends ConsumerWidget {
             child: Neumorphic(
               style: NeumorphicStyle(
                 shape: NeumorphicShape.flat,
-                boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(12)),
+                boxShape: NeumorphicBoxShape.roundRect(
+                  BorderRadius.circular(12),
+                ),
                 depth: 2,
                 intensity: 0.5,
               ),
@@ -324,15 +338,19 @@ class TrackListScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(48),
         child: Column(
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 48, color: AppTheme.warmIvory.withValues(alpha: 0.3)),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppTheme.warmIvory.withValues(alpha: 0.3),
+            ),
             const SizedBox(height: 16),
-            Text('Failed to load discourses',
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Failed to load discourses',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 16),
             TextButton.icon(
-              onPressed: () =>
-                  ref.invalidate(discourseListProvider(seriesId)),
+              onPressed: () => ref.invalidate(discourseListProvider(seriesId)),
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label: const Text('Retry'),
               style: TextButton.styleFrom(foregroundColor: AppTheme.amberFire),
@@ -350,11 +368,16 @@ class TrackListScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(48),
         child: Column(
           children: [
-            Icon(Icons.music_off_rounded,
-                size: 48, color: AppTheme.warmIvory.withValues(alpha: 0.3)),
+            Icon(
+              Icons.music_off_rounded,
+              size: 48,
+              color: AppTheme.warmIvory.withValues(alpha: 0.3),
+            ),
             const SizedBox(height: 16),
-            Text('No discourses found',
-                style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'No discourses found',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
           ],
         ),
       ),

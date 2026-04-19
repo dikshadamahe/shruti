@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
 import 'core/theme.dart';
 import 'firebase_options.dart';
+import 'services/audio_playback_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,15 +20,10 @@ void main() async {
     ),
   );
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initAudioPlaybackService();
 
-  runApp(
-    const ProviderScope(
-      child: OshoApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: OshoApp()));
 }
 
 class OshoApp extends StatelessWidget {

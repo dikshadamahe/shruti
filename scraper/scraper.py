@@ -1,4 +1,5 @@
 import requests
+from requests.adapters import HTTPAdapter
 from bs4 import BeautifulSoup
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -6,6 +7,7 @@ import logging
 import json
 from datetime import datetime
 import os
+from urllib3.util.retry import Retry
 
 # Configure logging
 logging.basicConfig(
@@ -20,6 +22,19 @@ class OshoScraper:
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+        retries = Retry(
+            total=3,
+            connect=3,
+            read=3,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "HEAD"],
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
         self.db = self._init_firebase()
 
     def _init_firebase(self):
@@ -34,7 +49,7 @@ class OshoScraper:
         """Scrapes the main series catalog and starts scraping each series."""
         logger.info(f"Starting catalog scrape: {catalog_url}")
         try:
-            response = requests.get(catalog_url, headers=self.headers, timeout=15)
+            response = self.session.get(catalog_url, timeout=15)
             soup = BeautifulSoup(response.text, 'lxml')
             
             script_tag = soup.find("script", id="__NEXT_DATA__")
@@ -90,7 +105,7 @@ class OshoScraper:
         logger.info(f"  Scraping tracks for: {series_data['title']}")
         
         try:
-            response = requests.get(series_url, headers=self.headers, timeout=15)
+            response = self.session.get(series_url, timeout=15)
             soup = BeautifulSoup(response.text, 'lxml')
             
             script_tag = soup.find("script", id="__NEXT_DATA__")
@@ -134,13 +149,31 @@ class OshoScraper:
                 track_number = track_info.get('audio_index', synced_count + 1)
                 # Use a track number based ID to keep it stable
                 track_doc_id = str(track_number).zfill(3)
+                is_broken = self.check_url_broken(audio_url)
+
+                if is_broken is None:
+                    existing_data = discourses_ref.document(track_doc_id).get().to_dict() or {}
+                    is_broken = existing_data.get('is_broken', False)
+                    logger.warning(
+                        "    Could not verify audio URL for %s track %s. Preserving is_broken=%s",
+                        series_id,
+                        track_doc_id,
+                        is_broken,
+                    )
+                elif is_broken:
+                    logger.warning(
+                        "    Broken audio URL detected for %s track %s: %s",
+                        series_id,
+                        track_doc_id,
+                        audio_url,
+                    )
                 
                 discourse_data = {
                     'track_number': track_number,
                     'title': title,
                     'audio_url': audio_url,
                     'duration_seconds': duration_seconds,
-                    'is_broken': False,
+                    'is_broken': is_broken,
                     'has_transcript': False,
                     'url_last_verified': datetime.now()
                 }
@@ -156,13 +189,18 @@ class OshoScraper:
     def check_url_broken(self, url):
         """Verifies if an audio URL is still valid."""
         try:
-            response = requests.head(url, headers=self.headers, timeout=5)
+            response = self.session.head(url, allow_redirects=True, timeout=5)
             # Some servers block HEAD, so we might need to handle 405 or other errors
             if response.status_code == 405:
-                response = requests.get(url, headers=self.headers, stream=True, timeout=5)
-            return response.status_code >= 400
-        except:
-            return True
+                response = self.session.get(url, stream=True, timeout=5)
+            if response.status_code in {404, 410}:
+                return True
+            if response.status_code >= 500:
+                return None
+            return False
+        except requests.RequestException as exc:
+            logger.warning("    URL verification failed for %s: %s", url, exc)
+            return None
 
 if __name__ == "__main__":
     scraper = OshoScraper()
